@@ -1,9 +1,14 @@
-if getgenv().Library then 
-    getgenv().Library:Unload()
+-- ============================================================
+-- Percsploit UI Library
+-- Host this file, then load it from any script with:
+--   local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/percwalkkk/UII/refs/heads/main/Library.lua"))()
+-- ============================================================
+
+if getgenv().Library then
+    pcall(function() getgenv().Library:Unload() end)
 end
 
 local Library do
-    
     -- Add chat detection system
 local function isTypingInChat()
     local ChatService = game:GetService("Chat")
@@ -104,10 +109,10 @@ end
         },
 
         Folders = {
-            Directory = "MyLibrary",
-            Configs = "MyLibrary/Configs",
-            Assets = "MyLibrary/Assets",
-            Themes = "MyLibrary/Themes"
+            Directory = "zoophack",
+            Configs = "zoophack/Configs",
+            Assets = "zoophack/Assets",
+            Themes = "zoophack/Themes"
         },
 
         Images = { -- you're welcome to reupload the images and replace it with your own links
@@ -1886,9 +1891,9 @@ end
         end
 
         Library:Connect(UserInputService.InputBegan, function(Input, Gpe)
-            if Gpe or isTypingInChat() then  -- Added isTypingInChat() check
-        return 
-    end
+            if Gpe or isTypingInChat() then 
+                return 
+            end
 
             if tostring(Input.KeyCode) == Library.MenuKeybind or tostring(Input.UserInputType) == Library.MenuKeybind then
                 Window:SetOpen(not Window.IsOpen)
@@ -1898,7 +1903,75 @@ end
         Window.Items = Items
 
         Window:SetOpen(true)
-        return setmetatable(Window, Library)
+        Library:Notification("Info", "Press 'Right Shift' to toggle the UI", 5)
+        local UserInputService = game:GetService("UserInputService")
+
+-- Check if the player is on mobile
+local function isMobile()
+    return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end
+if isMobile() then
+Library:Notification("Info", "Tap on the button in the middle to toggle the UI", 5)
+-- Mobile Toggle Button (works on PC too for testing)
+local MobileButton = Instances:Create("ImageButton", {  -- Changed from TextButton to ImageButton
+    Parent = Library.Holder.Instance,
+    Image = "rbxassetid://73976168997659",  -- Added logo image
+    ScaleType = Enum.ScaleType.Fit,  -- Added to properly scale the image
+    BackgroundColor3 = FromRGB(195, 130, 255),
+    BackgroundTransparency = 0.3,
+    AnchorPoint = Vector2New(0.5, 0),
+    Position = UDim2New(0.5, 0, 0, 10),
+    Size = UDim2New(0, 50, 0, 50),
+    ZIndex = 9999,
+    BorderSizePixel = 0,
+    Name = "MobileToggle",
+    AutoButtonColor = false  -- Added to prevent auto-coloring
+})
+
+Instances:Create("UICorner", {
+    Parent = MobileButton.Instance,
+    CornerRadius = UDimNew(0, 10)
+})
+
+Instances:Create("UIStroke", {
+    Parent = MobileButton.Instance,
+    Color = FromRGB(208, 158, 255),
+    Thickness = 2,
+    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    Transparency = 0.3
+})
+
+-- Add shadow
+local Shadow = Instances:Create("ImageLabel", {
+    Parent = MobileButton.Instance,
+    ImageColor3 = FromRGB(0, 0, 0),
+    ImageTransparency = 0.5,
+    AnchorPoint = Vector2New(0.5, 0.5),
+    Image = "rbxassetid://73976168997659",
+    ZIndex = 9998,
+    BorderSizePixel = 0,
+    SliceCenter = RectNew(Vector2New(112, 112), Vector2New(147, 147)),
+    ScaleType = Enum.ScaleType.Slice,
+    BackgroundTransparency = 1,
+    Position = UDim2New(0.5, 0, 0.5, 0),
+    SliceScale = 0.6,
+    Size = UDim2New(1, 20, 1, 20),
+    BackgroundColor3 = FromRGB(255, 255, 255)
+})
+
+-- Make it draggable
+MobileButton:MakeDraggable()
+
+-- Toggle functionality
+MobileButton:Connect("MouseButton1Click", function()
+    Window:SetOpen(not Window.IsOpen)
+end)
+
+-- Add theme support
+MobileButton:AddToTheme({BackgroundColor3 = "Accent", ImageColor3 = "Image"})  -- Added ImageColor3 theme
+end
+
+return setmetatable(Window, Library)
     end
 
     Library.Seperator = function(self)
@@ -2632,7 +2705,7 @@ end
                 Value = IsKeybind.Toggled
                 Toggle.Value = Value
             else
-                Toggle.Value = Value 
+                Toggle.Value =  Value 
             end
 
             Library.Flags[Toggle.Flag] = Value 
@@ -2891,7 +2964,7 @@ end
                 end)
 
                 Library:Connect(UserInputService.InputBegan, function(Input)
-                    if isTypingInChat() then return end  -- Add this line
+                    if isTypingInChat() then return end
                     if tostring(Input.KeyCode) == Keybind.Key or tostring(Input.UserInputType) == Keybind.Key then
                         if Keybind.Value == "None" then 
                             return 
@@ -3296,37 +3369,41 @@ end
         
         TableInsert(Slider.Page.SearchItems, SearchData)
 
-        Items["Drag"]:Connect("InputBegan", function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                Slider.Sliding = true 
+        -- Handle both mouse and touch input for drag button
+Items["Drag"]:Connect("InputBegan", function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Slider.Sliding = true 
 
-                local SizeX = ((Input.Position.X - 15) - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
-                local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
+        local SizeX = ((Input.Position.X - 15) - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+        local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
 
-                Slider:Set(MathClamp(Library:Round(Value, Slider.Decimals), Slider.Min, Slider.Max))
-            end
-        end)
+        Slider:Set(MathClamp(Library:Round(Value, Slider.Decimals), Slider.Min, Slider.Max))
+    end
+end)
 
-        Items["Drag"]:Connect("InputEnded", function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                Slider.Sliding = false 
-            end
-        end)
+Items["Drag"]:Connect("InputEnded", function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Slider.Sliding = false 
+    end
+end)
 
-        Library:Connect(UserInputService.InputChanged, function(Input)
-            if Slider.Sliding then
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    local mousePos = Input.Position.X
-                    local sliderPos = Items["RealSlider"].Instance.AbsolutePosition.X
-                    local sliderSize = Items["RealSlider"].Instance.AbsoluteSize.X
-                    
-                    local percentage = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
-                    local Value = Slider.Min + (percentage * (Slider.Max - Slider.Min))
+-- FIXED: Better touch/mouse movement handling
+Library:Connect(UserInputService.InputChanged, function(Input)
+    if Slider.Sliding then
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            -- Use absolute position calculation for better accuracy
+            local mousePos = Input.Position.X
+            local sliderPos = Items["RealSlider"].Instance.AbsolutePosition.X
+            local sliderSize = Items["RealSlider"].Instance.AbsoluteSize.X
+            
+            -- Calculate percentage, clamped between 0 and 1
+            local percentage = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
+            local Value = Slider.Min + (percentage * (Slider.Max - Slider.Min))
 
-                    Slider:Set(MathClamp(Library:Round(Value, Slider.Decimals), Slider.Min, Slider.Max))
-                end
-            end
-        end)
+            Slider:Set(MathClamp(Library:Round(Value, Slider.Decimals), Slider.Min, Slider.Max))
+        end
+    end
+end)
 
         if Slider.Default then
             Slider:Set(Slider.Default)
@@ -3405,7 +3482,6 @@ end
             Instances:Create("UIStroke", {
                 Parent = Items["OptionHolder"].Instance,
                 Color = FromRGB(24, 24, 24),
-                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             }):AddToTheme({Color = "Border"})
 
             Items["Holder"] = Instances:Create("ScrollingFrame", {
@@ -4051,7 +4127,7 @@ end
         end)
 
         Library:Connect(UserInputService.InputBegan, function(Input)
-            if isTypingInChat() then return end  -- Add this line
+            if isTypingInChat() then return end
             if tostring(Input.KeyCode) == Keybind.Key or tostring(Input.UserInputType) == Keybind.Key then
                 if Keybind.Value == "None" then 
                     return 
@@ -4214,4 +4290,34 @@ end
     end
 end
 
+-- ── Compatibility patches (so older Percsploit/Bunni scripts run unchanged) ──
+do
+    -- Section:Label({Name = "...", Alignment = "..."}) as well as Section:Label("...", "Left")
+    local OldLabel = Library.Sections.Label
+    Library.Sections.Label = function(self, Text, Alignment)
+        if type(Text) == "table" then
+            Alignment = Text.Alignment or Alignment
+            Text = Text.Name or Text.Text or "Label"
+        end
+        return OldLabel(self, Text, Alignment)
+    end
+
+    -- Section:Colorpicker({...}) on its own row
+    Library.Sections.Colorpicker = function(self, Data)
+        Data = Data or { }
+        return self:Label(Data.Name or ""):Colorpicker(Data)
+    end
+
+    -- Dropdown:SetValues(list) as an alias for Dropdown:Refresh(list)
+    local OldDropdown = Library.Sections.Dropdown
+    Library.Sections.Dropdown = function(self, Data)
+        local Dropdown = OldDropdown(self, Data)
+        function Dropdown:SetValues(List)
+            return Dropdown:Refresh(List)
+        end
+        return Dropdown
+    end
+end
+
+getgenv().Library = Library
 return Library
